@@ -1,5 +1,4 @@
 class Darkcore.Vector
-	data: null
 	(length) ->
 		@data = []
 	@from_array = (arr) ->

@@ -1,13 +1,13 @@
 class Block extends Darkcore.Sprite
-	velocity_x: 0.00
-	velocity_y: 0.00
 	(scene, width, height, x, y) ->
+		@velocity_x = 0.00
+		@velocity_y = 0.00
 		super scene, width, height, x, y
-		@div.css {
-			"background-image": "url(resources/Weapons_ThyLordRoot.png)"
-			"background-position": "64px 96px"
-		}
 
+		texture = Darkcore.Texture.fromFile scene, "resources/Weapons_ThyLordRoot.png"
+		@textureIndex = texture.textureId
+
+		@backgroundPosition = [64, 96]
 	onBeforeRender: (delta) ->
 		gravity = 7.0 * delta
 

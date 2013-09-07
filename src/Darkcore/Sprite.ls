@@ -1,38 +1,36 @@
-class Darkcore.Sprite
-	id: ""
-	x: 0.00
-	y: 0.00
-	rotation: 0.00
-	width: 32.00
-	height: 32.00
-	tile_width: 0.00
-	tile_height: 0.00
-	coords_top_left_x: 0.00
-	coords_top_left_y: 0.00
-	coords_bottom_left_x: 1.00
-	coords_bottom_left_y: 0.00
-	coords_bottom_right_x: 1.00
-	coords_bottom_right_y: 1.00
-	coords_top_right_x: 0.00
-	coords_top_right_y: 1.00
-	color_r: 255
-	color_g: 255
-	color_b: 255
-	scale_x: 1.00
-	scale_y: 1.00
-	animation: false
-	animation_from: 0
-	animation_to: 0
-	animation_current: 0
-	animation_duration: 60
-	animation_last_tick: 0
-	texture_index: -1
-	animation_event: null
-	div: null
-	scene: null
-	last_matrix: ""
-	last_size: [0, 0]
+class Sprite
+	@fromTexture = (scene, filename) ->
+		texture = Darkcore.Texture scene, filename
+		sprite = new Darkcore.Sprite scene
+		sprite.textureIndex = texture.textureId
+		sprite
 	(scene, width = 0, height = 0, x = 0, y = 0) ->
+		@rotation = 0.00
+		@tile_width = 0.00
+		@tile_height = 0.00
+		@coords_top_left_x = 0.00
+		@coords_top_left_y = 0.00
+		@coords_bottom_left_x = 1.00
+		@coords_bottom_left_y = 0.00
+		@coords_bottom_right_x = 1.00
+		@coords_bottom_right_y = 1.00
+		@coords_top_right_x = 0.00
+		@coords_top_right_y = 1.00
+		@color = [-1, -1, -1]
+		@scale_x = 1.00
+		@scale_y = 1.00
+		@animation = false
+		@animation_from = 0
+		@animation_to = 0
+		@animation_current = 0
+		@animation_duration = 60
+		@animation_last_tick = 0
+		@textureIndex = -1
+		@animation_event = null
+		@div = null
+		@last_style = ""
+		@backgroundPosition = [0, 0]
+
 		scene.addSprite @
 		@scene = scene
 		@width = width
@@ -40,31 +38,21 @@ class Darkcore.Sprite
 		@x = x
 		@y = y
 		@id = "ds_" + Math.floor Math.random! * 10000
-
+	getTexture: ->
+		@scene.textures[@textureIndex]
+	createElement: ->
 		matrix3d = @getTransformationMatrix!
 
 		@div = jQuery("""
-			<div id="#{@id}" style="
-				matrix3d(#{matrix3d.join \,});
-				width: #{@width}px;
-				height: #{@height}px;
-				position: absolute;
-				left: 0;
-				top: 0;
-				animation-duration: 16ms;
-				animation-timing-function: linear;
-				"></div>
+			<div id="#{@id}" style="#{@getStyles!.join \;}"></div>
 		""")
 		@div.appendTo @scene.div
 	destory: ->
-		@div.remove!
+		false
 	getId: ->
 		@id
 	setColor: (r, g, b) ->
-		@color_r = r
-		@color_g = g
-		@color_b = b
-		jQuery @div .css "background-color", "rgb(#{@color_r}, #{@color_g}, #{@color_b})"
+		@color = [r, g, b]
 	getBoundingBox: (mod_x = 0.00, mod_y = 0.00) ->
 		half_width = @width / 2.00
 		half_height = @height / 2.00
@@ -149,24 +137,48 @@ class Darkcore.Sprite
 			matrix[3] = matrix[3] * sy
 
 		[matrix[0], matrix[1], 0, 0, matrix[2], matrix[3], 0, 0, 0, 0, 1, 0, matrix[4], matrix[5], 0, 1]
-	onBeforeRender: ->
-	onRender: (delta) ->
-	render: (delta) ->
-		#TODO: textures
+	getStyles: ->
+		styles = []
 
-		if @last_size[0] is not @width or @last_size[1] is not @height
-			jQuery @div .css {width: @width, height: @height}
-			@last_size = [@width, @height]
+		styles.push "position: absolute"
+		styles.push "left: 0"
+		styles.push "top: 0"
 
+		styles.push "animation-duration: 16ms"
+		styles.push "animation-timing-function: linear"
+
+		if @color !== [-1, -1, -1]
+			styles.push "background-color: rgb(#{@color[0]}, #{@color[1]}, #{@color[2]})"
+
+		if @textureIndex > -1
+			texture = @getTexture!
+			styles.push "background-image: url(#{texture.surface.src})"
+			styles.push "background-position: #{@backgroundPosition[0]}px #{@backgroundPosition[1]}px"
+
+		styles.push "width: #{@width}px"
+		styles.push "height: #{@height}px"
+
+		# TODO: Detect 2D vs 3D Matrix?
 		matrix3d = @getTransformationMatrix!
 		matrix_css = "matrix3d(#{matrix3d.join \,})"
 
-		if matrix_css is not @last_matrix
-			@div[0].style.WebkitTransform = matrix_css
-			@div[0].style.MozTransform = matrix_css
-			#jQuery @div .css "transform", matrix_css
+		styles.push "-webkit-transform: #{matrix_css}"
+		styles.push "-moz-transform: #{matrix_css}"
 
-		@last_matrix = matrix_css
+		styles
+	onBeforeRender: ->
+	onRender: (delta) ->
+	render: (delta) ->
+		if @div is null
+			@createElement!
 
+		#TODO: textures
 
-@Darkcore.Sprite = Darkcore.Sprite
+		styles = []
+
+		styles = @getStyles!.join \;
+		if @last_style != styles
+			@div[0].style.cssText = styles
+			@last_style = styles
+
+export Darkcore.Sprite = Sprite

@@ -1,4 +1,5 @@
 (function(){
+  var out$ = typeof exports != 'undefined' && exports || this;
   jQuery(function(){
     var width, height, engine, scene, x$, panda, y$, logo, z$, fps, z1$, block1, z2$, block2, z3$, block3, z4$, block4, z5$, block6;
     width = jQuery(window).width();
@@ -13,7 +14,7 @@
     x$.y = 200;
     x$.velocity_x = 0.5;
     y$ = logo = new Game.Logo(scene);
-    y$.setTitle("Hi! Panda");
+    y$.setText("Hi! Panda");
     y$.x = 300;
     y$.y = 300;
     y$.scale_x = 2.0;
@@ -42,12 +43,13 @@
     z5$.setColor(50, 50, 50);
     scene.gamestate.blocks.push(block6);
     engine.run();
-    return setInterval(function(){
+    setInterval(function(){
       var x$, b;
       x$ = b = new Game.Block(scene, 32, 32, 100, 150);
       x$.velocity_x = 1.0 + Math.random() * 5;
       x$.velocity_y = Math.random() * 7;
       return x$;
     }, 50);
+    return out$.engine = engine = engine;
   });
 }).call(this);

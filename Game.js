@@ -14,11 +14,11 @@
     prototype.has_gun = false;
     prototype.jumping_from = null;
     function Panda(scene){
+      var texture;
       Panda.superclass.call(this, scene);
-      this.div.css({
-        "background-image": "url(resources/Panda_ClausKruuskopf.png)",
-        "background-position": "-1px 0px"
-      });
+      texture = Darkcore.Texture.fromFile(scene, "resources/Panda_ClausKruuskopf.png");
+      this.textureIndex = texture.textureId;
+      this.backgroundPosition = [-1, 0];
       this.width = 17;
       this.height = 22;
     }
@@ -49,24 +49,16 @@
         this.velocity_y -= gravity;
       }
       if (!this.jumping && this.scene.engine.keys.s && this.velocity_y < 0) {
-        this.div.css({
-          "background-position": -17 * 3 + "px " + -22 * 2 + "px"
-        });
+        this.backgroundPosition = [-17 * 3, -22 * 2];
         null;
       } else if (this.scene.engine.keys.d && this.velocity_x >= 0) {
         this.scale_x = 1.0;
-        this.div.css({
-          "background-position": -17 * 1 + "px " + -22 * 4 + "px"
-        });
+        this.backgroundPosition = [-17 * 1, -22 * 4];
       } else if (this.scene.engine.keys.a && this.velocity_x < 0) {
         this.scale_x = -1.0;
-        this.div.css({
-          "background-position": -17 * 1 + "px " + -22 * 4 + "px"
-        });
+        this.backgroundPosition = [-17 * 1, -22 * 4];
       } else if (!this.jumping && !this.scene.engine.keys.s && this.velocity_x === 0) {
-        this.div.css({
-          "background-position": "-1px 0px"
-        });
+        this.backgroundPosition = [-1, 0];
       }
       if (this.velocity_x < 0.50 && this.velocity_x > -0.50) {
         this.velocity_x = 0.00;
@@ -203,14 +195,14 @@
   var Block;
   Block = (function(superclass){
     var prototype = extend$((import$(Block, superclass).displayName = 'Block', Block), superclass).prototype, constructor = Block;
-    prototype.velocity_x = 0.00;
-    prototype.velocity_y = 0.00;
     function Block(scene, width, height, x, y){
+      var texture;
+      this.velocity_x = 0.00;
+      this.velocity_y = 0.00;
       Block.superclass.call(this, scene, width, height, x, y);
-      this.div.css({
-        "background-image": "url(resources/Weapons_ThyLordRoot.png)",
-        "background-position": "64px 96px"
-      });
+      texture = Darkcore.Texture.fromFile(scene, "resources/Weapons_ThyLordRoot.png");
+      this.textureIndex = texture.textureId;
+      this.backgroundPosition = [64, 96];
     }
     prototype.onBeforeRender = function(delta){
       var gravity, state, remove, i$, ref$, len$, block, bounding_box1, bounding_box2, bounding_box3, hit;
@@ -259,15 +251,12 @@
   var Logo;
   Logo = (function(superclass){
     var prototype = extend$((import$(Logo, superclass).displayName = 'Logo', Logo), superclass).prototype, constructor = Logo;
-    function Logo(scene){
-      Logo.superclass.call(this, scene);
+    function Logo(scene, width, height, x, y){
+      Logo.superclass.call(this, scene, width, height, x, y);
       jQuery(this.div).css("font-family", "'Caesar Dressing', cursive");
     }
-    prototype.setTitle = function(title){
-      return jQuery(this.div).text(title);
-    };
     return Logo;
-  }(Darkcore.Sprite));
+  }(Darkcore.Sprite.Text));
   this.Game.Logo = Logo;
   function extend$(sub, sup){
     function fun(){} fun.prototype = (sub.superclass = sup).prototype;
@@ -297,7 +286,7 @@
       return jQuery(this.div).text(title);
     };
     return FPS;
-  }(Darkcore.Sprite));
+  }(Darkcore.Sprite.Text));
   this.Game.FPS = FPS;
   function extend$(sub, sup){
     function fun(){} fun.prototype = (sub.superclass = sup).prototype;

@@ -9,19 +9,6 @@
   Darkcore.Engine = Engine = (function(){
     Engine.displayName = 'Engine';
     var prototype = Engine.prototype, constructor = Engine;
-    prototype.width = 0;
-    prototype.height = 0;
-    prototype.frames_per_second = 60;
-    prototype.keys = null;
-    prototype.mouse_x = 0;
-    prototype.mouse_y = 0;
-    prototype.title = "";
-    prototype.gamestate = null;
-    prototype.scenes = [];
-    prototype.active_scene = false;
-    prototype.done = false;
-    prototype.interval = false;
-    prototype.div = null;
     Engine.getTime = function(){
       if (typeof window.performance !== 'undefined') {
         return performance.now();
@@ -38,10 +25,21 @@
     };
     function Engine(width, height, title){
       title == null && (title = "");
+      this.frames_per_second = 60;
+      this.keys = null;
+      this.mouse_x = 0;
+      this.mouse_y = 0;
+      this.gamestate = null;
+      this.scenes = [];
+      this.activeScene = false;
+      this.done = false;
+      this.interval = false;
+      this.div = null;
       this.width = width;
       this.height = height;
       this.title = title;
       this.keys = new Darkcore.KeyState;
+      this.id = Math.random() * 100;
       jQuery(window).on('keydown keyup', this, function(evt){
         return evt.data.onKeyboardEvent(evt, evt.type === "keydown" ? true : false);
       });
@@ -81,6 +79,18 @@
       }
     };
     prototype.onMouseEvent = function(evt, is_down){
+      var scene, i$, ref$, len$, sprite;
+      if (evt.type === "mousedown") {
+        console.log(evt.target);
+        scene = this.getActiveScene();
+        console.log('scene', scene);
+        if (scene !== null) {
+          for (i$ = 0, len$ = (ref$ = scene.sprites).length; i$ < len$; ++i$) {
+            sprite = ref$[i$];
+            console.log(sprite);
+          }
+        }
+      }
       if (evt.type === "mousemove") {
         this.mouse_x = evt.clientX;
         return this.mouse_y = evt.clientY;
@@ -119,28 +129,26 @@
     };
     prototype.addScene = function(scene){
       scene.engine = this;
-      if (this.scenes.length === 0) {
-        this.active_scene = 0;
-      }
       return this.scenes.push(scene);
+    };
+    prototype.getActiveScene = function(){
+      if (this.activeScene) {
+        console.log(this.scenes);
+        return this.scenes[this.activeScene];
+      } else {
+        return null;
+      }
     };
     prototype.processEvents = function(){};
     prototype.render = function(){
-      var old_time, last_time, fps, minticks, parent, x$, stats, render_loop;
+      var old_time, last_time, fps, minticks, parent, render_loop;
       old_time = Darkcore.Engine.getTime();
       last_time = old_time;
       fps = 0;
       minticks = 1000 / 60;
       parent = this;
-      x$ = stats = new Stats();
-      x$.setMode(0);
-      x$.domElement.style.position = 'absolute';
-      x$.domElement.style.right = '0px';
-      x$.domElement.style.top = '0px';
-      document.body.appendChild(stats.domElement);
       render_loop = function(time){
         var new_time, fpsdelta, delta;
-        stats.begin();
         if (parent.done) {
           cancelAnimationFrame(parent.interval);
           jQuery(jQuery.find("#Darkcore_frame")).text("Done");
@@ -150,7 +158,11 @@
         fpsdelta = new_time - old_time;
         delta = (new_time - last_time) / 1000;
         parent.processEvents();
-        parent.scenes[parent.active_scene].render(delta);
+        if (parent.activeScene === false) {
+          parent.scenes[0].setActive();
+          parent.activeScene = 0;
+        }
+        parent.scenes[parent.activeScene].render(delta);
         fps++;
         last_time = new_time;
         if (fpsdelta > 1000) {
@@ -158,7 +170,6 @@
           parent.frames_per_second = fps;
           fps = 0;
         }
-        stats.end();
         return Darkcore.Engine.loop(render_loop, minticks);
       };
       return this.interval = Darkcore.Engine.loop(render_loop, minticks);
@@ -199,31 +210,48 @@
 }).call(this);
 
 (function(){
-  var Scene;
-  Darkcore.Scene = Scene = (function(){
+  var Scene, out$ = typeof exports != 'undefined' && exports || this;
+  Scene = (function(){
     Scene.displayName = 'Scene';
     var prototype = Scene.prototype, constructor = Scene;
-    prototype.camera_x = 0;
-    prototype.camera_y = 0;
-    prototype.last_camera = "";
-    prototype.background_color = [255, 255, 255, 1.0];
-    prototype.timed_events = [];
-    prototype.render_events = [];
-    prototype.remove_queue = [];
-    prototype.textures = [];
-    prototype.sprites = [];
-    prototype.sounds = [];
-    prototype.engine = null;
-    prototype.gamestate = null;
-    prototype.div = null;
-    prototype.id = "";
     function Scene(name, engine){
-      this.id = "dc-scene-" + engine.addScene(this);
+      var engineId;
+      this.camera_x = 0;
+      this.camera_y = 0;
+      this.last_camera = "";
+      this.background_color = [255, 255, 255, 1.0];
+      this.timed_events = [];
+      this.render_events = [];
+      this.remove_queue = [];
+      this.textures = [];
+      this.sounds = [];
+      this.engine = null;
+      this.gamestate = null;
+      this.div = null;
+      this.active = false;
+      engineId = engine.addScene(this);
+      this.id = "dc-scene-" + engineId;
       this.name = name;
       this.engine = engine;
-      this.div = jQuery("<div id=\"" + this.id + "\" style=\"\n	width: " + this.engine.width + "px;\n	height:" + this.engine.height + "px;\n	position: relative;\n	animation-duration: 16ms;\n	animation-timing-function: linear;\n\"></div>");
-      this.div.appendTo(this.engine.div);
+      this.div = null;
+      this.sprites = [];
     }
+    prototype.createElement = function(){
+      this.div = jQuery("<div id=\"" + this.id + "\" style=\"\n	width: " + this.engine.width + "px;\n	height:" + this.engine.height + "px;\n	position: absolute;\n	top: 0px;\n	left: 0px;\n	animation-duration: 16ms;\n	animation-timing-function: linear;\n\"></div>");
+      this.div.appendTo(this.engine.div);
+      if (this.isActive()) {
+        return this.div.css('display', 'block');
+      }
+    };
+    prototype.setInactive = function(){
+      return this.active = false;
+    };
+    prototype.setActive = function(){
+      return this.active = true;
+    };
+    prototype.isActive = function(){
+      return this.active;
+    };
     prototype.draw = function(delta){
       var i$, ref$, len$, sprite, item_index, new_camera, last_camera;
       for (i$ = 0, len$ = (ref$ = this.sprites).length; i$ < len$; ++i$) {
@@ -236,7 +264,7 @@
           sprite = ref$[i$];
           item_index = this.sprites.indexOf(sprite);
           if (item_index > -1) {
-            sprite.destory();
+            this.div[0].removeChild(sprite.div[0]);
             this.sprites.splice(item_index, 1);
           }
         }
@@ -250,6 +278,9 @@
     };
     prototype.render = function(delta){
       var i$, ref$, len$, sprite, mgr, i;
+      if (this.div === null) {
+        this.createElement();
+      }
       for (i$ = 0, len$ = (ref$ = this.sprites).length; i$ < len$; ++i$) {
         sprite = ref$[i$];
         sprite.onBeforeRender(delta);
@@ -265,8 +296,9 @@
       return this.draw(delta);
     };
     prototype.addSprite = function(sprite){
+      var ref$;
       sprite.scene = this;
-      return this.sprites.push(sprite);
+      return (ref$ = this.sprites)[ref$.length] = sprite;
     };
     prototype.removeSprite = function(sprite){
       return this.remove_queue.push(sprite);
@@ -291,7 +323,7 @@
     };
     return Scene;
   }());
-  this.Darkcore.Scene = Darkcore.Scene;
+  out$.Scene = Darkcore.Scene = Scene;
 }).call(this);
 
 (function(){
@@ -299,7 +331,6 @@
   Darkcore.Vector = Vector = (function(){
     Vector.displayName = 'Vector';
     var prototype = Vector.prototype, constructor = Vector;
-    prototype.data = null;
     function Vector(length){
       this.data = [];
     }
@@ -425,49 +456,47 @@
 }).call(this);
 
 (function(){
-  var Sprite;
-  Darkcore.Sprite = Sprite = (function(){
+  var Sprite, out$ = typeof exports != 'undefined' && exports || this;
+  Sprite = (function(){
     Sprite.displayName = 'Sprite';
     var prototype = Sprite.prototype, constructor = Sprite;
-    prototype.id = "";
-    prototype.x = 0.00;
-    prototype.y = 0.00;
-    prototype.rotation = 0.00;
-    prototype.width = 32.00;
-    prototype.height = 32.00;
-    prototype.tile_width = 0.00;
-    prototype.tile_height = 0.00;
-    prototype.coords_top_left_x = 0.00;
-    prototype.coords_top_left_y = 0.00;
-    prototype.coords_bottom_left_x = 1.00;
-    prototype.coords_bottom_left_y = 0.00;
-    prototype.coords_bottom_right_x = 1.00;
-    prototype.coords_bottom_right_y = 1.00;
-    prototype.coords_top_right_x = 0.00;
-    prototype.coords_top_right_y = 1.00;
-    prototype.color_r = 255;
-    prototype.color_g = 255;
-    prototype.color_b = 255;
-    prototype.scale_x = 1.00;
-    prototype.scale_y = 1.00;
-    prototype.animation = false;
-    prototype.animation_from = 0;
-    prototype.animation_to = 0;
-    prototype.animation_current = 0;
-    prototype.animation_duration = 60;
-    prototype.animation_last_tick = 0;
-    prototype.texture_index = -1;
-    prototype.animation_event = null;
-    prototype.div = null;
-    prototype.scene = null;
-    prototype.last_matrix = "";
-    prototype.last_size = [0, 0];
+    Sprite.fromTexture = function(scene, filename){
+      var texture, sprite;
+      texture = Darkcore.Texture(scene, filename);
+      sprite = new Darkcore.Sprite(scene);
+      sprite.textureIndex = texture.textureId;
+      return sprite;
+    };
     function Sprite(scene, width, height, x, y){
-      var matrix3d;
       width == null && (width = 0);
       height == null && (height = 0);
       x == null && (x = 0);
       y == null && (y = 0);
+      this.rotation = 0.00;
+      this.tile_width = 0.00;
+      this.tile_height = 0.00;
+      this.coords_top_left_x = 0.00;
+      this.coords_top_left_y = 0.00;
+      this.coords_bottom_left_x = 1.00;
+      this.coords_bottom_left_y = 0.00;
+      this.coords_bottom_right_x = 1.00;
+      this.coords_bottom_right_y = 1.00;
+      this.coords_top_right_x = 0.00;
+      this.coords_top_right_y = 1.00;
+      this.color = [-1, -1, -1];
+      this.scale_x = 1.00;
+      this.scale_y = 1.00;
+      this.animation = false;
+      this.animation_from = 0;
+      this.animation_to = 0;
+      this.animation_current = 0;
+      this.animation_duration = 60;
+      this.animation_last_tick = 0;
+      this.textureIndex = -1;
+      this.animation_event = null;
+      this.div = null;
+      this.last_style = "";
+      this.backgroundPosition = [0, 0];
       scene.addSprite(this);
       this.scene = scene;
       this.width = width;
@@ -475,21 +504,24 @@
       this.x = x;
       this.y = y;
       this.id = "ds_" + Math.floor(Math.random() * 10000);
-      matrix3d = this.getTransformationMatrix();
-      this.div = jQuery("<div id=\"" + this.id + "\" style=\"\n	matrix3d(" + matrix3d.join(',') + ");\n	width: " + this.width + "px;\n	height: " + this.height + "px;\n	position: absolute;\n	left: 0;\n	top: 0;\n	animation-duration: 16ms;\n	animation-timing-function: linear;\n	\"></div>");
-      this.div.appendTo(this.scene.div);
     }
+    prototype.getTexture = function(){
+      return this.scene.textures[this.textureIndex];
+    };
+    prototype.createElement = function(){
+      var matrix3d;
+      matrix3d = this.getTransformationMatrix();
+      this.div = jQuery("<div id=\"" + this.id + "\" style=\"" + this.getStyles().join(';') + "\"></div>");
+      return this.div.appendTo(this.scene.div);
+    };
     prototype.destory = function(){
-      return this.div.remove();
+      return false;
     };
     prototype.getId = function(){
       return this.id;
     };
     prototype.setColor = function(r, g, b){
-      this.color_r = r;
-      this.color_g = g;
-      this.color_b = b;
-      return jQuery(this.div).css("background-color", "rgb(" + this.color_r + ", " + this.color_g + ", " + this.color_b + ")");
+      return this.color = [r, g, b];
     };
     prototype.getBoundingBox = function(mod_x, mod_y){
       var half_width, half_height, bounding_box;
@@ -582,26 +614,216 @@
       }
       return [matrix[0], matrix[1], 0, 0, matrix[2], matrix[3], 0, 0, 0, 0, 1, 0, matrix[4], matrix[5], 0, 1];
     };
+    prototype.getStyles = function(){
+      var styles, texture, matrix3d, matrix_css;
+      styles = [];
+      styles.push("position: absolute");
+      styles.push("left: 0");
+      styles.push("top: 0");
+      styles.push("animation-duration: 16ms");
+      styles.push("animation-timing-function: linear");
+      if (!deepEq$(this.color, [-1, -1, -1], '===')) {
+        styles.push("background-color: rgb(" + this.color[0] + ", " + this.color[1] + ", " + this.color[2] + ")");
+      }
+      if (this.textureIndex > -1) {
+        texture = this.getTexture();
+        styles.push("background-image: url(" + texture.surface.src + ")");
+        styles.push("background-position: " + this.backgroundPosition[0] + "px " + this.backgroundPosition[1] + "px");
+      }
+      styles.push("width: " + this.width + "px");
+      styles.push("height: " + this.height + "px");
+      matrix3d = this.getTransformationMatrix();
+      matrix_css = "matrix3d(" + matrix3d.join(',') + ")";
+      styles.push("-webkit-transform: " + matrix_css);
+      styles.push("-moz-transform: " + matrix_css);
+      return styles;
+    };
     prototype.onBeforeRender = function(){};
     prototype.onRender = function(delta){};
     prototype.render = function(delta){
-      var matrix3d, matrix_css;
-      if (this.last_size[0] !== this.width || this.last_size[1] !== this.height) {
-        jQuery(this.div).css({
-          width: this.width,
-          height: this.height
-        });
-        this.last_size = [this.width, this.height];
+      var styles;
+      if (this.div === null) {
+        this.createElement();
       }
-      matrix3d = this.getTransformationMatrix();
-      matrix_css = "matrix3d(" + matrix3d.join(',') + ")";
-      if (matrix_css !== this.last_matrix) {
-        this.div[0].style.WebkitTransform = matrix_css;
-        this.div[0].style.MozTransform = matrix_css;
+      styles = [];
+      styles = this.getStyles().join(';');
+      if (this.last_style !== styles) {
+        this.div[0].style.cssText = styles;
+        return this.last_style = styles;
       }
-      return this.last_matrix = matrix_css;
     };
     return Sprite;
   }());
-  this.Darkcore.Sprite = Darkcore.Sprite;
+  out$.Sprite = Darkcore.Sprite = Sprite;
+  function deepEq$(x, y, type){
+    var toString = {}.toString, hasOwnProperty = {}.hasOwnProperty,
+        has = function (obj, key) { return hasOwnProperty.call(obj, key); };
+    first = true;
+    return eq(x, y, []);
+    function eq(a, b, stack) {
+      var className, length, size, result, alength, blength, r, key, ref, sizeB;
+      if (a == null || b == null) { return a === b; }
+      if (a.__placeholder__ || b.__placeholder__) { return true; }
+      if (a === b) { return a !== 0 || 1 / a == 1 / b; }
+      className = toString.call(a);
+      if (toString.call(b) != className) { return false; }
+      switch (className) {
+        case '[object String]': return a == String(b);
+        case '[object Number]':
+          return a != +a ? b != +b : (a == 0 ? 1 / a == 1 / b : a == +b);
+        case '[object Date]':
+        case '[object Boolean]':
+          return +a == +b;
+        case '[object RegExp]':
+          return a.source == b.source &&
+                 a.global == b.global &&
+                 a.multiline == b.multiline &&
+                 a.ignoreCase == b.ignoreCase;
+      }
+      if (typeof a != 'object' || typeof b != 'object') { return false; }
+      length = stack.length;
+      while (length--) { if (stack[length] == a) { return true; } }
+      stack.push(a);
+      size = 0;
+      result = true;
+      if (className == '[object Array]') {
+        alength = a.length;
+        blength = b.length;
+        if (first) { 
+          switch (type) {
+          case '===': result = alength === blength; break;
+          case '<==': result = alength <= blength; break;
+          case '<<=': result = alength < blength; break;
+          }
+          size = alength;
+          first = false;
+        } else {
+          result = alength === blength;
+          size = alength;
+        }
+        if (result) {
+          while (size--) {
+            if (!(result = size in a == size in b && eq(a[size], b[size], stack))){ break; }
+          }
+        }
+      } else {
+        if ('constructor' in a != 'constructor' in b || a.constructor != b.constructor) {
+          return false;
+        }
+        for (key in a) {
+          if (has(a, key)) {
+            size++;
+            if (!(result = has(b, key) && eq(a[key], b[key], stack))) { break; }
+          }
+        }
+        if (result) {
+          sizeB = 0;
+          for (key in b) {
+            if (has(b, key)) { ++sizeB; }
+          }
+          if (first) {
+            if (type === '<<=') {
+              result = size < sizeB;
+            } else if (type === '<==') {
+              result = size <= sizeB
+            } else {
+              result = size === sizeB;
+            }
+          } else {
+            first = false;
+            result = size === sizeB;
+          }
+        }
+      }
+      stack.pop();
+      return result;
+    }
+  }
+}).call(this);
+
+(function(){
+  var Text, out$ = typeof exports != 'undefined' && exports || this;
+  Text = (function(superclass){
+    var prototype = extend$((import$(Text, superclass).displayName = 'Text', Text), superclass).prototype, constructor = Text;
+    function Text(scene, text, width, height, x, y){
+      text == null && (text = "");
+      this.text = text;
+      this.textColor = [0, 0, 0];
+      this.textAlign = 'left';
+      Text.superclass.call(this, scene, width, height, x, y);
+    }
+    prototype.setText = function(text){
+      return this.text = text;
+    };
+    prototype.setTextColor = function(r, g, b){
+      return this.textColor = [r, g, b];
+    };
+    prototype.setTextAlign = function(alignment){
+      return this.textAlign = alignment;
+    };
+    prototype.createElement = function(){
+      var matrix3d;
+      matrix3d = this.getTransformationMatrix();
+      this.div = jQuery("<div id=\"" + this.id + "\" style=\"" + this.getStyles().join(';') + "\">" + this.text + "</div>");
+      return this.div.appendTo(this.scene.div);
+    };
+    prototype.getStyles = function(){
+      var styles;
+      styles = superclass.prototype.getStyles.call(this);
+      styles.push("text-align: " + this.textAlign);
+      styles.push("color: rgb(" + this.textColor.join(','));
+      return styles;
+    };
+    return Text;
+  }(Darkcore.Sprite));
+  out$.Text = Darkcore.Sprite.Text = Text;
+  function extend$(sub, sup){
+    function fun(){} fun.prototype = (sub.superclass = sup).prototype;
+    (sub.prototype = new fun).constructor = sub;
+    if (typeof sup.extended == 'function') sup.extended(sub);
+    return sub;
+  }
+  function import$(obj, src){
+    var own = {}.hasOwnProperty;
+    for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+    return obj;
+  }
+}).call(this);
+
+(function(){
+  var Texture, out$ = typeof exports != 'undefined' && exports || this;
+  Texture = (function(){
+    Texture.displayName = 'Texture';
+    var prototype = Texture.prototype, constructor = Texture;
+    Texture.fromFile = function(scene, filename){
+      var has_texture, texture;
+      has_texture = scene.textures.indexOf(filename);
+      if (has_texture > -1) {
+        return scene.textures[has_texture];
+      } else {
+        texture = new Darkcore.Texture(filename, scene);
+        return texture;
+      }
+    };
+    function Texture(filename, scene){
+      var that;
+      this.scene = scene;
+      this.surface = 0;
+      this.texture = 0;
+      this.texture_format = 0;
+      this.nOfColors = 0;
+      this.loaded = false;
+      this.width = 0;
+      this.height = 0;
+      this.textureId = this.scene.textures.push(this) - 1;
+      that = this;
+      this.surface = new Image;
+      this.surface.onload = function(evt){
+        return that.loaded = true;
+      };
+      this.surface.src = filename;
+    }
+    return Texture;
+  }());
+  out$.Texture = Darkcore.Texture = Texture;
 }).call(this);

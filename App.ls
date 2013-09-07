@@ -3,6 +3,15 @@ jQuery ->
 	height = jQuery window .height!
 
 	engine = new Darkcore.Engine width, height, 'Hi Panda!'
+
+	# menu = new Darkcore.Scene 'menu', engine
+
+	# startgame = new Darkcore.Sprite.Text menu, "Start Game", 100, 25, (engine.width / 2), (engine.height / 2)
+	# 	..id = "start"
+	# 	..setColor 255, 0, 0
+	# 	..setTextColor 255, 255, 255
+	# 	..setTextAlign 'center'
+
 	scene = new Darkcore.Scene 'game', engine
 	scene.gamestate = {
 		blocks: []
@@ -14,7 +23,7 @@ jQuery ->
 		..velocity_x = 0.5
 
 	logo = new Game.Logo scene
-		..setTitle "Hi! Panda"
+		..setText "Hi! Panda"
 		..x = 300
 		..y = 300
 		..scale_x = 2.0
@@ -56,3 +65,5 @@ jQuery ->
 			..velocity_x = 1.0 + Math.random() * 5
 			..velocity_y = Math.random() * 7
 	, 50
+
+	export engine = engine

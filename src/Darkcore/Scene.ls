@@ -1,32 +1,46 @@
-class Darkcore.Scene
-	camera_x: 0
-	camera_y: 0
-	last_camera: ""
-	background_color: [255, 255, 255, 1.0]
-	timed_events: []
-	render_events: []
-	remove_queue: []
-	textures: []
-	sprites: []
-	sounds: []
-	engine: null
-	gamestate: null
-	div: null
-	id: ""
+class Scene
 	(name, engine) ->
-		@id = "dc-scene-#{engine.addScene @}"
+		@camera_x = 0
+		@camera_y = 0
+		@last_camera = ""
+		@background_color = [255, 255, 255, 1.0]
+		@timed_events = []
+		@render_events = []
+		@remove_queue = []
+		@textures = []
+		@sounds = []
+		@engine = null
+		@gamestate = null
+		@div = null
+		@active = false
+		engineId = engine.addScene @
+		@id = "dc-scene-#{engineId}"
 		@name = name
 		@engine = engine
+		@div = null
+		@sprites = []
+	createElement: ->
 		@div = jQuery("""
 			<div id="#{@id}" style="
 				width: #{@engine.width}px;
 				height:#{@engine.height}px;
-				position: relative;
+				position: absolute;
+				top: 0px;
+				left: 0px;
 				animation-duration: 16ms;
 				animation-timing-function: linear;
 			"></div>
 		""")
 		@div.appendTo @engine.div
+
+		if @isActive!
+			@div.css 'display', 'block'
+	setInactive: ->
+		@active = false
+	setActive: ->
+		@active = true
+	isActive: ->
+		@active
 	draw: (delta) ->
 		for sprite in @sprites
 			sprite.onRender delta
@@ -36,7 +50,8 @@ class Darkcore.Scene
 			for sprite in @remove_queue
 				item_index = @sprites.indexOf sprite
 				if item_index > -1
-					sprite.destory!
+					#sprite.destory!
+					@div[0].removeChild sprite.div[0]
 					@sprites.splice item_index, 1
 			@remove_queue = []
 
@@ -47,6 +62,8 @@ class Darkcore.Scene
 			last_camera = new_camera
 
 	render: (delta) ->
+		if @div is null
+			@createElement!
 		for sprite in @sprites
 			sprite.onBeforeRender delta
 
@@ -58,7 +75,7 @@ class Darkcore.Scene
 		@draw delta
 	addSprite: (sprite) ->
 		sprite.scene = @;
-		@sprites.push sprite
+		@sprites[*] = sprite
 	removeSprite: (sprite) ->
 		@remove_queue.push sprite
 	addEvent: (evtType, evt) ->
@@ -75,4 +92,4 @@ class Darkcore.Scene
 		jQuery @div .css "background-color", "rgba(#{@background_color[0]}, #{@background_color[1]}, #{@background_color[2]}, #{@background_color[3]})"
 
 
-@Darkcore.Scene = Darkcore.Scene
+export Darkcore.Scene = Scene

@@ -1,8 +1,6 @@
-class Logo extends Darkcore.Sprite
-	(scene) ->
-		super scene
+class Logo extends Darkcore.Sprite.Text
+	(scene, width, height, x, y) ->
+		super scene, width, height, x, y
 		jQuery @div .css "font-family", "'Caesar Dressing', cursive"
-	setTitle: (title) ->
-		jQuery @div .text title
 
 @Game.Logo = Logo

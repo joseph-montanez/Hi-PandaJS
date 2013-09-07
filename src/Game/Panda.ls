@@ -6,10 +6,9 @@ class Panda extends Darkcore.Sprite
 	jumping_from: null
 	(scene) ->
 		super scene
-		@div.css {
-			"background-image": "url(resources/Panda_ClausKruuskopf.png)"
-			"background-position": "-1px 0px"
-		}
+		texture = Darkcore.Texture.fromFile scene, "resources/Panda_ClausKruuskopf.png"
+		@textureIndex = texture.textureId
+		@backgroundPosition = [-1, 0]
 		@width = 17
 		@height = 22
 	onBeforeRender: (delta) ->
@@ -38,27 +37,18 @@ class Panda extends Darkcore.Sprite
 		# The down arrow produces -4, greater then gravities -1
 		# If this happens they will be sitting, if not jumping.
 		if !@jumping and @scene.engine.keys.s and @velocity_y < 0
-			@div.css {
-				"background-position":  "#{-17 * 3}px #{-22 * 2}px"
-			}
+			@backgroundPosition = [-17 * 3, -22 * 2]
 
 			# @anima_sit!
 			null
 		else if @scene.engine.keys.d and @velocity_x >= 0
 			@scale_x = 1.0
-			@div.css {
-				"background-position":  "#{-17 * 1}px #{-22 * 4}px"
-			}
+			@backgroundPosition = [-17 * 1, -22 * 4]
 		else if @scene.engine.keys.a and @velocity_x < 0
 			@scale_x = -1.0
-			@div.css {
-				"background-position":  "#{-17 * 1}px #{-22 * 4}px"
-			}
+			@backgroundPosition = [-17 * 1, -22 * 4]
 		else if !@jumping and not @scene.engine.keys.s and @velocity_x == 0
-			@div.css {
-				"background-position": "-1px 0px"
-			}
-
+			@backgroundPosition = [-1, 0]
 		# Prevent the player from twitching back and forth
 		if @velocity_x < 0.50 && @velocity_x > -0.50
 			@velocity_x = 0.00;

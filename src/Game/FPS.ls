@@ -1,4 +1,4 @@
-class FPS extends Darkcore.Sprite
+class FPS extends Darkcore.Sprite.Text
 	(scene) ->
 		super scene
 		jQuery @div .css "font-family", "'Caesar Dressing', cursive"
