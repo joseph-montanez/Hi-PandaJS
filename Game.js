@@ -50,7 +50,6 @@
       }
       if (!this.jumping && this.scene.engine.keys.s && this.velocity_y < 0) {
         this.backgroundPosition = [-17 * 3, -22 * 2];
-        null;
       } else if (this.scene.engine.keys.d && this.velocity_x >= 0) {
         this.scale_x = 1.0;
         this.backgroundPosition = [-17 * 1, -22 * 4];
@@ -169,12 +168,6 @@
       this.scene.camera_x = this.scene.engine.width - this.x - this.scene.engine.width / 2;
       return this.scene.camera_y = this.y - this.scene.engine.height / 2;
     };
-    prototype.onRender = function(delta){
-      jQuery("#x-pos").text(Math.round(this.x) + "");
-      jQuery("#y-pos").text(Math.round(this.y) + "");
-      jQuery("#velocity-pos").text(Math.round(this.velocity_x, 3) + " x " + Math.round(this.velocity_y, 3));
-      return jQuery("#jumping-pos").text((this.jumping ? 'yes' : 'no') + "");
-    };
     return Panda;
   }(Darkcore.Sprite));
   this.Game.Panda = Panda;
@@ -280,7 +273,9 @@
       jQuery(this.div).css("font-family", "'Caesar Dressing', cursive");
     }
     prototype.onRender = function(delta){
-      return this.setTitle("FPS: " + this.scene.engine.frames_per_second);
+      superclass.prototype.onRender.call(this, delta);
+      this.setTitle("FPS: " + this.scene.engine.frames_per_second);
+      return [];
     };
     prototype.setTitle = function(title){
       return jQuery(this.div).text(title);
@@ -288,6 +283,41 @@
     return FPS;
   }(Darkcore.Sprite.Text));
   this.Game.FPS = FPS;
+  function extend$(sub, sup){
+    function fun(){} fun.prototype = (sub.superclass = sup).prototype;
+    (sub.prototype = new fun).constructor = sub;
+    if (typeof sup.extended == 'function') sup.extended(sub);
+    return sub;
+  }
+  function import$(obj, src){
+    var own = {}.hasOwnProperty;
+    for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+    return obj;
+  }
+}).call(this);
+
+(function(){
+  var Grass;
+  Grass = (function(superclass){
+    var prototype = extend$((import$(Grass, superclass).displayName = 'Grass', Grass), superclass).prototype, constructor = Grass;
+    function Grass(scene, width, height, x, y){
+      this.velocity_x = 0.00;
+      this.velocity_y = 0.00;
+      this.texture = Darkcore.Texture.fromFile(scene, "resources/grass.png");
+      Grass.superclass.call(this, scene, width, height, x, y);
+      this.init = false;
+    }
+    prototype.onRender = function(delta){
+      var styles;
+      styles = superclass.prototype.onRender.call(this, delta);
+      if (!this.init) {
+        this.div.html("<div style=\"\n	background-image: url(resources/grass.png);\n	margin-top: -53px;\n	width: 256px;\n	height: 256px;\n	background-position: 0px -28px;\n	background-size: 125%;\n\">\n</div>");
+      }
+      return styles;
+    };
+    return Grass;
+  }(Darkcore.Sprite));
+  this.Game.Grass = Grass;
   function extend$(sub, sup){
     function fun(){} fun.prototype = (sub.superclass = sup).prototype;
     (sub.prototype = new fun).constructor = sub;

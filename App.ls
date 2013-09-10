@@ -4,13 +4,17 @@ jQuery ->
 
 	engine = new Darkcore.Engine width, height, 'Hi Panda!'
 
-	# menu = new Darkcore.Scene 'menu', engine
+	menu = new Darkcore.Scene 'menu', engine
 
-	# startgame = new Darkcore.Sprite.Text menu, "Start Game", 100, 25, (engine.width / 2), (engine.height / 2)
-	# 	..id = "start"
-	# 	..setColor 255, 0, 0
-	# 	..setTextColor 255, 255, 255
-	# 	..setTextAlign 'center'
+	startgame = new Darkcore.Sprite.Text menu, "Start Game", 100, 25, (engine.width / 2), (engine.height / 2)
+		..id = "start"
+		..setColor 255, 0, 0
+		..setTextColor 255, 255, 255
+		..setTextAlign 'center'
+
+	music = new Darkcore.Sound 'resources/Control_Alt_Deus_-_01_-_Control.mp3'
+	menu.addSound music
+	music.play!
 
 	scene = new Darkcore.Scene 'game', engine
 	scene.gamestate = {
@@ -29,13 +33,8 @@ jQuery ->
 		..scale_x = 2.0
 		..scale_y = 2.0
 
-	fps = new Game.FPS scene
-		..x = 400
-		..y = 100
-
-	block1 = new Darkcore.Sprite scene, 100, 100, 300, 100
+	block1 = new Game.Grass scene, 256px, 192px, 500px, 0px
 		..id = "block1"
-		..setColor 255, 0, 0
 	scene.gamestate.blocks.push block1
 
 	block2 = new Darkcore.Sprite scene, 100, 15, 100, 50
@@ -58,12 +57,16 @@ jQuery ->
 		..setColor 50, 50, 50
 	scene.gamestate.blocks.push block6
 
+	fps = new Game.FPS scene
+		..x = 400
+		..y = 100
+
 	engine.run!
 
-	setInterval ->
-		b = new Game.Block scene, 32, 32, 100, 150
-			..velocity_x = 1.0 + Math.random() * 5
-			..velocity_y = Math.random() * 7
-	, 50
+	# setInterval ->
+	# 	b = new Game.Block scene, 32, 32, 100, 150
+	# 		..velocity_x = 1.0 + Math.random() * 5
+	# 		..velocity_y = Math.random() * 7
+	# , 50
 
 	export engine = engine

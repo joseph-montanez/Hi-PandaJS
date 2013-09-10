@@ -38,9 +38,6 @@ class Panda extends Darkcore.Sprite
 		# If this happens they will be sitting, if not jumping.
 		if !@jumping and @scene.engine.keys.s and @velocity_y < 0
 			@backgroundPosition = [-17 * 3, -22 * 2]
-
-			# @anima_sit!
-			null
 		else if @scene.engine.keys.d and @velocity_x >= 0
 			@scale_x = 1.0
 			@backgroundPosition = [-17 * 1, -22 * 4]
@@ -181,11 +178,5 @@ class Panda extends Darkcore.Sprite
 
 		@scene.camera_x = @scene.engine.width - @x - (@scene.engine.width / 2)
 		@scene.camera_y = @y - (@scene.engine.height / 2)
-
-	onRender: (delta) ->
-		jQuery "\#x-pos" .text "#{Math.round(@x)}"
-		jQuery "\#y-pos" .text "#{Math.round(@y)}"
-		jQuery "\#velocity-pos" .text "#{Math.round(@velocity_x, 3)} x #{Math.round(@velocity_y, 3)}"
-		jQuery "\#jumping-pos" .text "#{if @jumping then \yes else \no}"
 
 @Game.Panda = Panda

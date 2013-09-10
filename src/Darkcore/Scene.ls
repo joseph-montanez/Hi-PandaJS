@@ -21,15 +21,7 @@ class Scene
 		@sprites = []
 	createElement: ->
 		@div = jQuery("""
-			<div id="#{@id}" style="
-				width: #{@engine.width}px;
-				height:#{@engine.height}px;
-				position: absolute;
-				top: 0px;
-				left: 0px;
-				animation-duration: 16ms;
-				animation-timing-function: linear;
-			"></div>
+			<div id="#{@id}" style="#{@getStyles!.join \;}"></div>
 		""")
 		@div.appendTo @engine.div
 
@@ -41,10 +33,35 @@ class Scene
 		@active = true
 	isActive: ->
 		@active
+
+	getStyles: (styles = []) ->
+		styles.push "position: absolute"
+		styles.push "left: 0"
+		styles.push "top: 0"
+
+		styles.push "animation-duration: 16ms"
+		styles.push "animation-timing-function: linear"
+
+		if @active
+			styles.push "display: block"
+		else
+			styles.push "display: hidden"
+
+		styles.push "width: #{@engine.width}px"
+		styles.push "height: #{@engine.height}px"
+
+		if Modernizr.csstransforms3d
+			styles.push "-webkit-transform: translate3d(#{@camera_x}px, #{@camera_y}px, 0)"
+			styles.push "-moz-transform: translate3d(#{@camera_x}px, #{@camera_y}px, 0)"
+		else
+			styles.push "-webkit-transform: translate(#{@camera_x}px, #{@camera_y}px)"
+			styles.push "-moz-transform: translate(#{@camera_x}px, #{@camera_y}px)"
+
+		styles
 	draw: (delta) ->
 		for sprite in @sprites
-			sprite.onRender delta
-			sprite.render delta
+			styles = sprite.onRender delta
+			sprite.render delta, styles
 
 		if @remove_queue.length > 0
 			for sprite in @remove_queue
@@ -55,11 +72,10 @@ class Scene
 					@sprites.splice item_index, 1
 			@remove_queue = []
 
-		new_camera = "translate3d(#{@camera_x}px, #{@camera_y}px, 0)"
-
-		if new_camera != last_camera
-			jQuery @div .css "transform", new_camera
-			last_camera = new_camera
+		styles = (@getStyles []).join \;
+		if @last_style != styles
+			@div[0].style.cssText = styles
+			@last_style = styles
 
 	render: (delta) ->
 		if @div is null
@@ -73,8 +89,11 @@ class Scene
 				@timed_events.splice i, 1
 
 		@draw delta
+	addSound: (sound) ->
+		sound.scene = @
+		@sounds[*] = sound
 	addSprite: (sprite) ->
-		sprite.scene = @;
+		sprite.scene = @
 		@sprites[*] = sprite
 	removeSprite: (sprite) ->
 		@remove_queue.push sprite

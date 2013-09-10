@@ -1,30 +1,35 @@
 (function(){
   var out$ = typeof exports != 'undefined' && exports || this;
   jQuery(function(){
-    var width, height, engine, scene, x$, panda, y$, logo, z$, fps, z1$, block1, z2$, block2, z3$, block3, z4$, block4, z5$, block6;
+    var width, height, engine, menu, x$, startgame, music, scene, y$, panda, z$, logo, z1$, block1, z2$, block2, z3$, block3, z4$, block4, z5$, block6, z6$, fps;
     width = jQuery(window).width();
     height = jQuery(window).height();
     engine = new Darkcore.Engine(width, height, 'Hi Panda!');
+    menu = new Darkcore.Scene('menu', engine);
+    x$ = startgame = new Darkcore.Sprite.Text(menu, "Start Game", 100, 25, engine.width / 2, engine.height / 2);
+    x$.id = "start";
+    x$.setColor(255, 0, 0);
+    x$.setTextColor(255, 255, 255);
+    x$.setTextAlign('center');
+    music = new Darkcore.Sound('resources/Control_Alt_Deus_-_01_-_Control.mp3');
+    menu.addSound(music);
+    music.play();
     scene = new Darkcore.Scene('game', engine);
     scene.gamestate = {
       blocks: []
     };
-    x$ = panda = new Game.Panda(scene);
-    x$.x = 100;
-    x$.y = 200;
-    x$.velocity_x = 0.5;
-    y$ = logo = new Game.Logo(scene);
-    y$.setText("Hi! Panda");
-    y$.x = 300;
-    y$.y = 300;
-    y$.scale_x = 2.0;
-    y$.scale_y = 2.0;
-    z$ = fps = new Game.FPS(scene);
-    z$.x = 400;
-    z$.y = 100;
-    z1$ = block1 = new Darkcore.Sprite(scene, 100, 100, 300, 100);
+    y$ = panda = new Game.Panda(scene);
+    y$.x = 100;
+    y$.y = 200;
+    y$.velocity_x = 0.5;
+    z$ = logo = new Game.Logo(scene);
+    z$.setText("Hi! Panda");
+    z$.x = 300;
+    z$.y = 300;
+    z$.scale_x = 2.0;
+    z$.scale_y = 2.0;
+    z1$ = block1 = new Game.Grass(scene, 256, 192, 500, 0);
     z1$.id = "block1";
-    z1$.setColor(255, 0, 0);
     scene.gamestate.blocks.push(block1);
     z2$ = block2 = new Darkcore.Sprite(scene, 100, 15, 100, 50);
     z2$.id = "block2";
@@ -42,14 +47,10 @@
     z5$.id = "block6";
     z5$.setColor(50, 50, 50);
     scene.gamestate.blocks.push(block6);
+    z6$ = fps = new Game.FPS(scene);
+    z6$.x = 400;
+    z6$.y = 100;
     engine.run();
-    setInterval(function(){
-      var x$, b;
-      x$ = b = new Game.Block(scene, 32, 32, 100, 150);
-      x$.velocity_x = 1.0 + Math.random() * 5;
-      x$.velocity_y = Math.random() * 7;
-      return x$;
-    }, 50);
     return out$.engine = engine = engine;
   });
 }).call(this);

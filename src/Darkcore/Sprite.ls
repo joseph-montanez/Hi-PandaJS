@@ -41,8 +41,6 @@ class Sprite
 	getTexture: ->
 		@scene.textures[@textureIndex]
 	createElement: ->
-		matrix3d = @getTransformationMatrix!
-
 		@div = jQuery("""
 			<div id="#{@id}" style="#{@getStyles!.join \;}"></div>
 		""")
@@ -136,10 +134,11 @@ class Sprite
 			matrix[2] = matrix[2] * sy
 			matrix[3] = matrix[3] * sy
 
-		[matrix[0], matrix[1], 0, 0, matrix[2], matrix[3], 0, 0, 0, 0, 1, 0, matrix[4], matrix[5], 0, 1]
-	getStyles: ->
-		styles = []
-
+		if Modernizr.csstransforms3d
+			[matrix[0], matrix[1], 0, 0, matrix[2], matrix[3], 0, 0, 0, 0, 1, 0, matrix[4], matrix[5], 0, 1]
+		else
+			matrix
+	getStyles: (styles = []) ->
 		styles.push "position: absolute"
 		styles.push "left: 0"
 		styles.push "top: 0"
@@ -159,8 +158,12 @@ class Sprite
 		styles.push "height: #{@height}px"
 
 		# TODO: Detect 2D vs 3D Matrix?
-		matrix3d = @getTransformationMatrix!
-		matrix_css = "matrix3d(#{matrix3d.join \,})"
+		matrix = @getTransformationMatrix!
+
+		if Modernizr.csstransforms3d
+			matrix_css = "matrix3d(#{matrix.join \,})"
+		else
+			matrix_css = "matrix(#{matrix.join \,})"
 
 		styles.push "-webkit-transform: #{matrix_css}"
 		styles.push "-moz-transform: #{matrix_css}"
@@ -168,15 +171,11 @@ class Sprite
 		styles
 	onBeforeRender: ->
 	onRender: (delta) ->
-	render: (delta) ->
 		if @div is null
 			@createElement!
-
-		#TODO: textures
-
-		styles = []
-
-		styles = @getStyles!.join \;
+		[]
+	render: (delta, styles = []) ->
+		styles = (@getStyles styles).join \;
 		if @last_style != styles
 			@div[0].style.cssText = styles
 			@last_style = styles

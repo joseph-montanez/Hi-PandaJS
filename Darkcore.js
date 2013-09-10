@@ -151,7 +151,6 @@
         var new_time, fpsdelta, delta;
         if (parent.done) {
           cancelAnimationFrame(parent.interval);
-          jQuery(jQuery.find("#Darkcore_frame")).text("Done");
           return;
         }
         new_time = Darkcore.Engine.getTime();
@@ -237,7 +236,7 @@
       this.sprites = [];
     }
     prototype.createElement = function(){
-      this.div = jQuery("<div id=\"" + this.id + "\" style=\"\n	width: " + this.engine.width + "px;\n	height:" + this.engine.height + "px;\n	position: absolute;\n	top: 0px;\n	left: 0px;\n	animation-duration: 16ms;\n	animation-timing-function: linear;\n\"></div>");
+      this.div = jQuery("<div id=\"" + this.id + "\" style=\"" + this.getStyles().join(';') + "\"></div>");
       this.div.appendTo(this.engine.div);
       if (this.isActive()) {
         return this.div.css('display', 'block');
@@ -252,12 +251,35 @@
     prototype.isActive = function(){
       return this.active;
     };
+    prototype.getStyles = function(styles){
+      styles == null && (styles = []);
+      styles.push("position: absolute");
+      styles.push("left: 0");
+      styles.push("top: 0");
+      styles.push("animation-duration: 16ms");
+      styles.push("animation-timing-function: linear");
+      if (this.active) {
+        styles.push("display: block");
+      } else {
+        styles.push("display: hidden");
+      }
+      styles.push("width: " + this.engine.width + "px");
+      styles.push("height: " + this.engine.height + "px");
+      if (Modernizr.csstransforms3d) {
+        styles.push("-webkit-transform: translate3d(" + this.camera_x + "px, " + this.camera_y + "px, 0)");
+        styles.push("-moz-transform: translate3d(" + this.camera_x + "px, " + this.camera_y + "px, 0)");
+      } else {
+        styles.push("-webkit-transform: translate(" + this.camera_x + "px, " + this.camera_y + "px)");
+        styles.push("-moz-transform: translate(" + this.camera_x + "px, " + this.camera_y + "px)");
+      }
+      return styles;
+    };
     prototype.draw = function(delta){
-      var i$, ref$, len$, sprite, item_index, new_camera, last_camera;
+      var i$, ref$, len$, sprite, styles, item_index;
       for (i$ = 0, len$ = (ref$ = this.sprites).length; i$ < len$; ++i$) {
         sprite = ref$[i$];
-        sprite.onRender(delta);
-        sprite.render(delta);
+        styles = sprite.onRender(delta);
+        sprite.render(delta, styles);
       }
       if (this.remove_queue.length > 0) {
         for (i$ = 0, len$ = (ref$ = this.remove_queue).length; i$ < len$; ++i$) {
@@ -270,10 +292,10 @@
         }
         this.remove_queue = [];
       }
-      new_camera = "translate3d(" + this.camera_x + "px, " + this.camera_y + "px, 0)";
-      if (new_camera !== last_camera) {
-        jQuery(this.div).css("transform", new_camera);
-        return last_camera = new_camera;
+      styles = this.getStyles([]).join(';');
+      if (this.last_style !== styles) {
+        this.div[0].style.cssText = styles;
+        return this.last_style = styles;
       }
     };
     prototype.render = function(delta){
@@ -294,6 +316,11 @@
         }
       }
       return this.draw(delta);
+    };
+    prototype.addSound = function(sound){
+      var ref$;
+      sound.scene = this;
+      return (ref$ = this.sounds)[ref$.length] = sound;
     };
     prototype.addSprite = function(sprite){
       var ref$;
@@ -324,135 +351,6 @@
     return Scene;
   }());
   out$.Scene = Darkcore.Scene = Scene;
-}).call(this);
-
-(function(){
-  var Vector;
-  Darkcore.Vector = Vector = (function(){
-    Vector.displayName = 'Vector';
-    var prototype = Vector.prototype, constructor = Vector;
-    function Vector(length){
-      this.data = [];
-    }
-    Vector.from_array = function(arr){
-      var new_vector, i$, to$, i;
-      new_vector = new Darkcore.Vector(arr.length);
-      for (i$ = 0, to$ = arr.length; i$ <= to$; ++i$) {
-        i = i$;
-        new_vector.set(i, arr[i]);
-      }
-      return new_vector;
-    };
-    Vector.copy = function(vector){
-      var new_vector, i$, to$, i;
-      new_vector = new Darkcore.Vector(vector.length);
-      for (i$ = 0, to$ = vector.length; i$ <= to$; ++i$) {
-        i = i$;
-        new_vector.set(i, vector.get(i));
-      }
-      return new_vector;
-    };
-    prototype.scale = function(val){
-      var len, i$, i, results$ = [];
-      len = this.data.length - 1;
-      for (i$ = 0; i$ <= len; ++i$) {
-        i = i$;
-        results$.push(this.data[i] *= val);
-      }
-      return results$;
-    };
-    prototype.add = function(val){
-      var len, i$, i, results$ = [];
-      len = this.data.length - 1;
-      for (i$ = 0; i$ <= len; ++i$) {
-        i = i$;
-        results$.push(this.data[i] += val);
-      }
-      return results$;
-    };
-    prototype.sub = function(val){
-      var len, i$, i, results$ = [];
-      this.add;
-      len = this.data.length - 1;
-      for (i$ = 0; i$ <= len; ++i$) {
-        i = i$;
-        results$.push(this.data[i] += val);
-      }
-      return results$;
-    };
-    prototype.mulScalar = function(val){
-      return this.scale(val);
-    };
-    prototype.divScalar = function(val){
-      return this.scale(1 / val);
-    };
-    prototype.addScalar = function(val){
-      return this.add(val);
-    };
-    prototype.subScalar = function(val){
-      return this.add(-val);
-    };
-    prototype.get = function(index){
-      return this.data[index];
-    };
-    prototype.set = function(index, val){
-      return this.data[index] = val;
-    };
-    prototype.distance = function(vector){
-      var a_x, a_y, b_x, b_y;
-      a_x = this.get(0);
-      a_y = this.get(1);
-      b_x = vector.get(0);
-      b_y = vector.get(1);
-      return Darkcore.Vector.from_array([Math.abs(a_x - b_x), Math.abs(a_y - b_y)]);
-    };
-    prototype.dot = function(vector){
-      var len, result, i$, i;
-      len = this.data.length - 1;
-      result = 0.00;
-      for (i$ = 0; i$ <= len; ++i$) {
-        i = i$;
-        result += this.get(i) * vector.get(i);
-      }
-      return result;
-    };
-    prototype.normalize = function(){
-      var vx, vy, len_v, v;
-      vx = this.get(0);
-      vy = this.get(1);
-      len_v = Math.sqrt(vx * vx + vy * vy);
-      vx /= len_v;
-      vy /= len_v;
-      v = Darkcore.Vector.from_array([vx, vy]);
-      return v;
-    };
-    prototype.length = function(){
-      var len, result, i$, i;
-      len = this.data.length - 1;
-      result = 0.00;
-      for (i$ = 0; i$ <= len; ++i$) {
-        i = i$;
-        result += this.get(i) * this.get(i);
-      }
-      return result;
-    };
-    prototype.toString = function(){
-      var len, result, i$, i;
-      len = this.data.length - 1;
-      result = "(";
-      for (i$ = 0; i$ <= len; ++i$) {
-        i = i$;
-        if (i !== 0) {
-          result += ", ";
-        }
-        result += "" + this.get(i);
-      }
-      result += ")";
-      return result;
-    };
-    return Vector;
-  }());
-  this.Darkcore.Vector = Darkcore.Vector;
 }).call(this);
 
 (function(){
@@ -509,8 +407,6 @@
       return this.scene.textures[this.textureIndex];
     };
     prototype.createElement = function(){
-      var matrix3d;
-      matrix3d = this.getTransformationMatrix();
       this.div = jQuery("<div id=\"" + this.id + "\" style=\"" + this.getStyles().join(';') + "\"></div>");
       return this.div.appendTo(this.scene.div);
     };
@@ -612,11 +508,15 @@
         matrix[2] = matrix[2] * sy;
         matrix[3] = matrix[3] * sy;
       }
-      return [matrix[0], matrix[1], 0, 0, matrix[2], matrix[3], 0, 0, 0, 0, 1, 0, matrix[4], matrix[5], 0, 1];
+      if (Modernizr.csstransforms3d) {
+        return [matrix[0], matrix[1], 0, 0, matrix[2], matrix[3], 0, 0, 0, 0, 1, 0, matrix[4], matrix[5], 0, 1];
+      } else {
+        return matrix;
+      }
     };
-    prototype.getStyles = function(){
-      var styles, texture, matrix3d, matrix_css;
-      styles = [];
+    prototype.getStyles = function(styles){
+      var texture, matrix, matrix_css;
+      styles == null && (styles = []);
       styles.push("position: absolute");
       styles.push("left: 0");
       styles.push("top: 0");
@@ -632,21 +532,26 @@
       }
       styles.push("width: " + this.width + "px");
       styles.push("height: " + this.height + "px");
-      matrix3d = this.getTransformationMatrix();
-      matrix_css = "matrix3d(" + matrix3d.join(',') + ")";
+      matrix = this.getTransformationMatrix();
+      if (Modernizr.csstransforms3d) {
+        matrix_css = "matrix3d(" + matrix.join(',') + ")";
+      } else {
+        matrix_css = "matrix(" + matrix.join(',') + ")";
+      }
       styles.push("-webkit-transform: " + matrix_css);
       styles.push("-moz-transform: " + matrix_css);
       return styles;
     };
     prototype.onBeforeRender = function(){};
-    prototype.onRender = function(delta){};
-    prototype.render = function(delta){
-      var styles;
+    prototype.onRender = function(delta){
       if (this.div === null) {
         this.createElement();
       }
-      styles = [];
-      styles = this.getStyles().join(';');
+      return [];
+    };
+    prototype.render = function(delta, styles){
+      styles == null && (styles = []);
+      styles = this.getStyles(styles).join(';');
       if (this.last_style !== styles) {
         this.div[0].style.cssText = styles;
         return this.last_style = styles;
@@ -791,6 +696,63 @@
 }).call(this);
 
 (function(){
+  var Sound, out$ = typeof exports != 'undefined' && exports || this;
+  Sound = (function(){
+    Sound.displayName = 'Sound';
+    var prototype = Sound.prototype, constructor = Sound;
+    function Sound(filename){
+      filename == null && (filename = "");
+      this.filename = filename;
+      this.loaded = false;
+      this.audio = null;
+      this.source = null;
+    }
+    prototype.load = function(callback){
+      var soundfile, parent, x$, request;
+      callback == null && (callback = false);
+      if (this.filename.length > 0) {
+        if (Modernizr.audio.ogg) {
+          soundfile = this.filename.replace(/\.(mp3|ogg|m4a)/, '.ogg');
+        } else if (Modernizr.audio.mp3) {
+          soundfile = this.filename.replace(/\.(mp3|ogg|m4a)/, '.mp3');
+        }
+        this.audio = new webkitAudioContext();
+        parent = this;
+        x$ = request = new XMLHttpRequest();
+        x$.open("GET", soundfile, true);
+        x$.responseType = 'arraybuffer';
+        x$.onload = function(){
+          var x$;
+          parent.loaded = true;
+          x$ = parent.source = parent.audio.createBufferSource();
+          x$.connect(parent.audio.destination);
+          return parent.audio.decodeAudioData(request.response, function(buffer){
+            parent.source.buffer = buffer;
+            if (callback !== false) {
+              return callback(parent);
+            }
+          });
+        };
+        x$.send();
+        return x$;
+      }
+    };
+    prototype.play = function(){
+      if (this.loaded === false) {
+        this.load(function(sound){
+          return sound.play();
+        });
+      }
+      if (this.source !== null) {
+        return this.source.start(0);
+      }
+    };
+    return Sound;
+  }());
+  out$.Sound = Darkcore.Sound = Sound;
+}).call(this);
+
+(function(){
   var Texture, out$ = typeof exports != 'undefined' && exports || this;
   Texture = (function(){
     Texture.displayName = 'Texture';
@@ -826,4 +788,133 @@
     return Texture;
   }());
   out$.Texture = Darkcore.Texture = Texture;
+}).call(this);
+
+(function(){
+  var Vector;
+  Darkcore.Vector = Vector = (function(){
+    Vector.displayName = 'Vector';
+    var prototype = Vector.prototype, constructor = Vector;
+    function Vector(length){
+      this.data = [];
+    }
+    Vector.from_array = function(arr){
+      var new_vector, i$, to$, i;
+      new_vector = new Darkcore.Vector(arr.length);
+      for (i$ = 0, to$ = arr.length; i$ <= to$; ++i$) {
+        i = i$;
+        new_vector.set(i, arr[i]);
+      }
+      return new_vector;
+    };
+    Vector.copy = function(vector){
+      var new_vector, i$, to$, i;
+      new_vector = new Darkcore.Vector(vector.length);
+      for (i$ = 0, to$ = vector.length; i$ <= to$; ++i$) {
+        i = i$;
+        new_vector.set(i, vector.get(i));
+      }
+      return new_vector;
+    };
+    prototype.scale = function(val){
+      var len, i$, i, results$ = [];
+      len = this.data.length - 1;
+      for (i$ = 0; i$ <= len; ++i$) {
+        i = i$;
+        results$.push(this.data[i] *= val);
+      }
+      return results$;
+    };
+    prototype.add = function(val){
+      var len, i$, i, results$ = [];
+      len = this.data.length - 1;
+      for (i$ = 0; i$ <= len; ++i$) {
+        i = i$;
+        results$.push(this.data[i] += val);
+      }
+      return results$;
+    };
+    prototype.sub = function(val){
+      var len, i$, i, results$ = [];
+      this.add;
+      len = this.data.length - 1;
+      for (i$ = 0; i$ <= len; ++i$) {
+        i = i$;
+        results$.push(this.data[i] += val);
+      }
+      return results$;
+    };
+    prototype.mulScalar = function(val){
+      return this.scale(val);
+    };
+    prototype.divScalar = function(val){
+      return this.scale(1 / val);
+    };
+    prototype.addScalar = function(val){
+      return this.add(val);
+    };
+    prototype.subScalar = function(val){
+      return this.add(-val);
+    };
+    prototype.get = function(index){
+      return this.data[index];
+    };
+    prototype.set = function(index, val){
+      return this.data[index] = val;
+    };
+    prototype.distance = function(vector){
+      var a_x, a_y, b_x, b_y;
+      a_x = this.get(0);
+      a_y = this.get(1);
+      b_x = vector.get(0);
+      b_y = vector.get(1);
+      return Darkcore.Vector.from_array([Math.abs(a_x - b_x), Math.abs(a_y - b_y)]);
+    };
+    prototype.dot = function(vector){
+      var len, result, i$, i;
+      len = this.data.length - 1;
+      result = 0.00;
+      for (i$ = 0; i$ <= len; ++i$) {
+        i = i$;
+        result += this.get(i) * vector.get(i);
+      }
+      return result;
+    };
+    prototype.normalize = function(){
+      var vx, vy, len_v, v;
+      vx = this.get(0);
+      vy = this.get(1);
+      len_v = Math.sqrt(vx * vx + vy * vy);
+      vx /= len_v;
+      vy /= len_v;
+      v = Darkcore.Vector.from_array([vx, vy]);
+      return v;
+    };
+    prototype.length = function(){
+      var len, result, i$, i;
+      len = this.data.length - 1;
+      result = 0.00;
+      for (i$ = 0; i$ <= len; ++i$) {
+        i = i$;
+        result += this.get(i) * this.get(i);
+      }
+      return result;
+    };
+    prototype.toString = function(){
+      var len, result, i$, i;
+      len = this.data.length - 1;
+      result = "(";
+      for (i$ = 0; i$ <= len; ++i$) {
+        i = i$;
+        if (i !== 0) {
+          result += ", ";
+        }
+        result += "" + this.get(i);
+      }
+      result += ")";
+      return result;
+    };
+    return Vector;
+  }());
+  this.Darkcore.Vector = Darkcore.Vector;
 }).call(this);

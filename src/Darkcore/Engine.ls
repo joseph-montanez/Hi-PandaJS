@@ -126,7 +126,7 @@ class Darkcore.Engine
 		render_loop = (time) ->
 			if parent.done
 				cancelAnimationFrame parent.interval;
-				jQuery (jQuery.find "\#Darkcore_frame") .text "Done"
+				#jQuery (jQuery.find "\#Darkcore_frame") .text "Done"
 				return
 
 			new_time = Darkcore.Engine.getTime!

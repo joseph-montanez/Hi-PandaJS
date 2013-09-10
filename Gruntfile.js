@@ -11,10 +11,11 @@ module.exports = function(grunt) {
 						'src/Darkcore/Collion.ls',
 						'src/Darkcore/Keystate.ls',
 						'src/Darkcore/Scene.ls',
-						'src/Darkcore/Vector.ls',
 						'src/Darkcore/Sprite.ls',
 						'src/Darkcore/Sprite/Text.ls',
-						'src/Darkcore/Texture.ls'
+						'src/Darkcore/Sound.ls',
+						'src/Darkcore/Texture.ls',
+						'src/Darkcore/Vector.ls'
 					],
 					'Game.js': [
 						'src/Game.ls',
@@ -22,6 +23,7 @@ module.exports = function(grunt) {
 						'src/Game/Block.ls',
 						'src/Game/Logo.ls',
 						'src/Game/FPS.ls',
+						'src/Game/Grass.ls'
 					],
 					'App.js': 'App.ls'
 				}
@@ -38,7 +40,9 @@ module.exports = function(grunt) {
 				'src/Darkcore/Sprite.ls',
 				'src/Darkcore/Sprite/Text.ls',
 				'src/Darkcore/Texture.ls',
+				'src/Darkcore/Sound.ls',
 				'src/Game.ls',
+				'src/Game/Grass.ls',
 				'src/Game/Panda.ls',
 				'src/Game/Block.ls',
 				'src/Game/Logo.ls',
