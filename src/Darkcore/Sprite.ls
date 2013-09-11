@@ -157,7 +157,6 @@ class Sprite
 		styles.push "width: #{@width}px"
 		styles.push "height: #{@height}px"
 
-		# TODO: Detect 2D vs 3D Matrix?
 		matrix = @getTransformationMatrix!
 
 		if Modernizr.csstransforms3d
@@ -169,17 +168,19 @@ class Sprite
 		styles.push "-moz-transform: #{matrix_css}"
 
 		styles
+	render: (delta, styles = []) ->
+		styles = (@getStyles styles).join \;
+		if @last_style != styles
+			@div[0].style.cssText = styles
+			@last_style = styles
+	/**
+	 * Events
+	 */
 	onBeforeRender: ->
 	onRender: (delta) ->
 		if @div is null
 			@createElement!
 		[]
 	onLeftClick: (evt) ->
-		console.log \click
-	render: (delta, styles = []) ->
-		styles = (@getStyles styles).join \;
-		if @last_style != styles
-			@div[0].style.cssText = styles
-			@last_style = styles
 
 export Darkcore.Sprite = Sprite
