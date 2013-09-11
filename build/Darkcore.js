@@ -555,16 +555,6 @@
       styles.push("-moz-transform: " + matrix_css);
       return styles;
     };
-    prototype.onBeforeRender = function(){};
-    prototype.onRender = function(delta){
-      if (this.div === null) {
-        this.createElement();
-      }
-      return [];
-    };
-    prototype.onLeftClick = function(evt){
-      return console.log('click');
-    };
     prototype.render = function(delta, styles){
       styles == null && (styles = []);
       styles = this.getStyles(styles).join(';');
@@ -573,6 +563,17 @@
         return this.last_style = styles;
       }
     };
+    /**
+     * Events
+     */
+    prototype.onBeforeRender = function(){};
+    prototype.onRender = function(delta){
+      if (this.div === null) {
+        this.createElement();
+      }
+      return [];
+    };
+    prototype.onLeftClick = function(evt){};
     return Sprite;
   }());
   out$.Sprite = Darkcore.Sprite = Sprite;
@@ -669,8 +670,10 @@
     function Text(scene, text, width, height, x, y){
       text == null && (text = "");
       this.text = text;
+      this.lastText = "";
       this.textColor = [0, 0, 0];
       this.textAlign = 'left';
+      this.padding = 0;
       Text.superclass.call(this, scene, width, height, x, y);
     }
     prototype.setText = function(text){
@@ -679,8 +682,20 @@
     prototype.setTextColor = function(r, g, b){
       return this.textColor = [r, g, b];
     };
+    prototype.getTextColor = function(){
+      return this.textColor;
+    };
     prototype.setTextAlign = function(alignment){
       return this.textAlign = alignment;
+    };
+    prototype.getTextAlign = function(){
+      return this.textAlign;
+    };
+    prototype.setPadding = function(padding){
+      return this.padding = padding;
+    };
+    prototype.getPadding = function(){
+      return this.padding;
     };
     prototype.createElement = function(){
       var matrix3d;
@@ -692,7 +707,20 @@
       var styles;
       styles = superclass.prototype.getStyles.call(this);
       styles.push("text-align: " + this.textAlign);
-      styles.push("color: rgb(" + this.textColor.join(','));
+      styles.push("color: rgb(" + this.textColor.join(',') + ")");
+      styles.push("padding: " + this.padding + "px");
+      return styles;
+    };
+    /**
+     * Events
+     */
+    prototype.onRender = function(delta){
+      var styles;
+      styles = superclass.prototype.onRender.call(this, delta);
+      if (this.text !== this.lastText) {
+        jQuery(this.div).text(this.text);
+        this.lastText = this.text;
+      }
       return styles;
     };
     return Text;

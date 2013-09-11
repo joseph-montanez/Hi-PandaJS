@@ -5,7 +5,7 @@ module.exports = function(grunt) {
 		livescript: {
 			src: {
 				files: {
-					'Darkcore.js': [
+					'build/Darkcore.js': [
 						'src/Darkcore.ls',
 						'src/Darkcore/Engine.ls',
 						'src/Darkcore/Collion.ls',
@@ -17,7 +17,7 @@ module.exports = function(grunt) {
 						'src/Darkcore/Texture.ls',
 						'src/Darkcore/Vector.ls'
 					],
-					'Game.js': [
+					'build/Game.js': [
 						'src/Game.ls',
 						'src/Game/Panda.ls',
 						'src/Game/Block.ls',
@@ -25,7 +25,7 @@ module.exports = function(grunt) {
 						'src/Game/FPS.ls',
 						'src/Game/Grass.ls'
 					],
-					'App.js': 'App.ls'
+					'build/App.js': 'src/App.ls'
 				}
 			}
 		},
