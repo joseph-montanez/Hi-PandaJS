@@ -55,6 +55,7 @@ module.exports = function(grunt) {
 
 	grunt.loadNpmTasks('grunt-livescript');
 	grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.loadNpmTasks('grunt-contrib-jasmine');
 
 	grunt.registerTask('test', ['livescript']);
 
