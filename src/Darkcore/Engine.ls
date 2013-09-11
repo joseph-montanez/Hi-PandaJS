@@ -17,6 +17,7 @@ class Darkcore.Engine
 		@gamestate = null
 		@scenes = []
 		@activeScene = false
+		@nextScene = false
 		@done = false
 		@interval = false
 		@div = null
@@ -121,7 +122,13 @@ class Darkcore.Engine
 				@activeScene = 0
 				@scenes[0].setActive!
 		@scenes[@activeScene]
-
+	queueScene: (currentScene) ->
+		@nextScene = currentScene
+	activateScene: (currentScene) ->
+		lastScene = @getActiveScene!
+		if lastScene != currentScene
+			lastScene.setInactive!
+			currentScene.setActive!
 	processEvents: ->
 	render: ->
 		old_time = Darkcore.Engine.getTime!
@@ -142,11 +149,13 @@ class Darkcore.Engine
 
 			parent.processEvents!
 
-			if parent.activeScene is false
-				parent.scenes[0].setActive!
-				parent.activeScene = 0
+			scene = parent.getActiveScene!
+				..render delta
 
-			parent.scenes[parent.activeScene].render delta
+			if parent.nextScene is not false
+				scene.div.css 'display', 'none'
+				parent.activateScene parent.nextScene
+				parent.nextScene = false
 
 			fps++
 			last_time := new_time

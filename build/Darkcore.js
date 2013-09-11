@@ -32,6 +32,7 @@
       this.gamestate = null;
       this.scenes = [];
       this.activeScene = false;
+      this.nextScene = false;
       this.done = false;
       this.interval = false;
       this.div = null;
@@ -152,6 +153,17 @@
       }
       return this.scenes[this.activeScene];
     };
+    prototype.queueScene = function(currentScene){
+      return this.nextScene = currentScene;
+    };
+    prototype.activateScene = function(currentScene){
+      var lastScene;
+      lastScene = this.getActiveScene();
+      if (lastScene !== currentScene) {
+        lastScene.setInactive();
+        return currentScene.setActive();
+      }
+    };
     prototype.processEvents = function(){};
     prototype.render = function(){
       var old_time, last_time, fps, minticks, parent, render_loop;
@@ -161,7 +173,7 @@
       minticks = 1000 / 60;
       parent = this;
       render_loop = function(time){
-        var new_time, fpsdelta, delta;
+        var new_time, fpsdelta, delta, x$, scene;
         if (parent.done) {
           cancelAnimationFrame(parent.interval);
           return;
@@ -170,11 +182,13 @@
         fpsdelta = new_time - old_time;
         delta = (new_time - last_time) / 1000;
         parent.processEvents();
-        if (parent.activeScene === false) {
-          parent.scenes[0].setActive();
-          parent.activeScene = 0;
+        x$ = scene = parent.getActiveScene();
+        x$.render(delta);
+        if (parent.nextScene !== false) {
+          scene.div.css('display', 'none');
+          parent.activateScene(parent.nextScene);
+          parent.nextScene = false;
         }
-        parent.scenes[parent.activeScene].render(delta);
         fps++;
         last_time = new_time;
         if (fpsdelta > 1000) {
@@ -256,7 +270,10 @@
       }
     };
     prototype.setInactive = function(){
-      return this.active = false;
+      this.active = false;
+      if (this.div !== null) {
+        return this.div.css('display', 'none');
+      }
     };
     prototype.setActive = function(){
       return this.active = true;
@@ -673,6 +690,9 @@
       this.lastText = "";
       this.textColor = [0, 0, 0];
       this.textAlign = 'left';
+      this.textSize = 14;
+      this.textFamily = "monospace";
+      this.textWeight = "normal";
       this.padding = 0;
       Text.superclass.call(this, scene, width, height, x, y);
     }
@@ -697,6 +717,24 @@
     prototype.getPadding = function(){
       return this.padding;
     };
+    prototype.setTextSize = function(textSize){
+      return this.textSize = textSize;
+    };
+    prototype.getTextSize = function(){
+      return this.textSize;
+    };
+    prototype.setTextFamily = function(textFamily){
+      return this.textFamily = textFamily;
+    };
+    prototype.getTextFamily = function(){
+      return this.textFamily;
+    };
+    prototype.setTextWeight = function(textWeight){
+      return this.textWeight = textWeight;
+    };
+    prototype.getTextWeight = function(){
+      return this.textWeight;
+    };
     prototype.createElement = function(){
       var matrix3d;
       matrix3d = this.getTransformationMatrix();
@@ -709,6 +747,9 @@
       styles.push("text-align: " + this.textAlign);
       styles.push("color: rgb(" + this.textColor.join(',') + ")");
       styles.push("padding: " + this.padding + "px");
+      styles.push("font-size: " + this.textSize + "px");
+      styles.push("font-family: " + this.textFamily);
+      styles.push("font-weight: " + this.textWeight);
       return styles;
     };
     /**

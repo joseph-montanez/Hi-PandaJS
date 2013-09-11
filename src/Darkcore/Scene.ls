@@ -29,6 +29,8 @@ class Scene
 			@div.css 'display', 'block'
 	setInactive: ->
 		@active = false
+		if @div is not null
+			@div.css 'display', 'none'
 	setActive: ->
 		@active = true
 	isActive: ->
