@@ -4,13 +4,22 @@ class Text extends Darkcore.Sprite
 		@lastText = ""
 		@textColor = [0, 0, 0]
 		@textAlign = 'left'
+		@padding = 0px
 		super scene, width, height, x, y
 	setText: (text) ->
 		@text = text
 	setTextColor: (r, g, b) ->
 		@textColor = [r, g, b]
+	getTextColor: ->
+		@textColor
 	setTextAlign: (alignment) ->
 		@textAlign = alignment
+	getTextAlign: ->
+		@textAlign
+	setPadding: (padding) ->
+		@padding = padding
+	getPadding: ->
+		@padding
 	createElement: ->
 		matrix3d = @getTransformationMatrix!
 
@@ -22,6 +31,7 @@ class Text extends Darkcore.Sprite
 		styles = super!
 		styles.push "text-align: #{@textAlign}"
 		styles.push "color: rgb(#{@textColor.join \,})"
+		styles.push "padding: #{@padding}px"
 		return styles
 	/**
 	 * Events
