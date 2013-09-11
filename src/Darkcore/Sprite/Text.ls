@@ -20,7 +20,7 @@ class Text extends Darkcore.Sprite
 	getStyles: ->
 		styles = super!
 		styles.push "text-align: #{@textAlign}"
-		styles.push "color: rgb(#{@textColor.join \,}"
+		styles.push "color: rgb(#{@textColor.join \,})"
 		return styles
 
 export Darkcore.Sprite.Text = Text
