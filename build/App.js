@@ -1,20 +1,25 @@
 (function(){
   var out$ = typeof exports != 'undefined' && exports || this;
   jQuery(function(){
-    var width, height, engine, menu, x$, title, y$, startgame, z$, toggleMusic, music, scene, z1$, panda, z2$, logo, z3$, block1, z4$, block2, z5$, block3, z6$, block4, z7$, block6, z8$, fps;
+    var width, height, engine, menu, x$, title, y$, startgame, z$, toggleMusic, scene, z1$, panda, z2$, logo, z3$, block1, z4$, block2, z5$, block3, z6$, block4, z7$, block6, z8$, fps;
     width = jQuery(window).width();
     height = jQuery(window).height();
-    engine = new Darkcore.Engine(width, height, 'Hi Panda!');
+    engine = new Darkcore.Engine(640, 480, 'Hi Panda!');
     menu = new Darkcore.Scene('menu', engine);
-    x$ = title = new Darkcore.Sprite.Text(menu, "Hi Panda", 100, 25, engine.width / 2, engine.height / 2 + 50);
+    x$ = title = new Darkcore.Sprite.Text(menu, "Hi! Panda", 150, 25, engine.width / 2, engine.height / 2 + 50);
     x$.id = "title";
     x$.setTextColor(0, 0, 0);
+    x$.setTextSize(24);
+    x$.setTextWeight(900);
     x$.setTextAlign('center');
     y$ = startgame = new Darkcore.Sprite.Text(menu, "Start Game", 100, 25, engine.width / 2, engine.height / 2 + 15);
     y$.id = "start";
     y$.setColor(255, 0, 0);
     y$.setTextColor(255, 255, 255);
     y$.setTextAlign('center');
+    y$.onLeftClick = function(evt){
+      return engine.queueScene(scene);
+    };
     z$ = toggleMusic = new Darkcore.Sprite.Text(menu, "Stop Music", 100, 25, engine.width / 2, engine.height / 2 - 15);
     z$.id = "toggleMusic";
     z$.onLeftClick = function(evt){
@@ -29,9 +34,6 @@
     z$.setColor(100, 255, 100);
     z$.setTextColor(255, 255, 255);
     z$.setTextAlign('center');
-    music = new Darkcore.Sound('resources/Control_Alt_Deus_-_01_-_Control.mp3');
-    menu.addSound(music);
-    music.play();
     scene = new Darkcore.Scene('game', engine);
     scene.gamestate = {
       blocks: []

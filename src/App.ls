@@ -2,13 +2,15 @@ jQuery ->
 	width = jQuery window .width!
 	height = jQuery window .height!
 
-	engine = new Darkcore.Engine width, height, 'Hi Panda!'
+	engine = new Darkcore.Engine 640, 480, 'Hi Panda!'
 
 	menu = new Darkcore.Scene 'menu', engine
 
-	title = new Darkcore.Sprite.Text menu, "Hi Panda", 100, 25, (engine.width / 2), (engine.height / 2) + 50
+	title = new Darkcore.Sprite.Text menu, "Hi! Panda", 150, 25, (engine.width / 2), (engine.height / 2) + 50
 		..id = "title"
 		..setTextColor 0, 0, 0
+		..setTextSize 24px
+		..setTextWeight 900
 		..setTextAlign 'center'
 
 	startgame = new Darkcore.Sprite.Text menu, "Start Game", 100, 25, (engine.width / 2), (engine.height / 2) + 15
@@ -16,6 +18,8 @@ jQuery ->
 		..setColor 255, 0, 0
 		..setTextColor 255, 255, 255
 		..setTextAlign 'center'
+		..onLeftClick = (evt) ->
+			engine.queueScene scene
 
 	toggleMusic = new Darkcore.Sprite.Text menu, "Stop Music", 100, 25, (engine.width / 2), (engine.height / 2) - 15
 		..id = "toggleMusic"
@@ -30,9 +34,9 @@ jQuery ->
 		..setTextColor 255, 255, 255
 		..setTextAlign 'center'
 
-	music = new Darkcore.Sound 'resources/Control_Alt_Deus_-_01_-_Control.mp3'
-	menu.addSound music
-	music.play!
+	# music = new Darkcore.Sound 'resources/Control_Alt_Deus_-_01_-_Control.mp3'
+	# menu.addSound music
+	# music.play!
 
 	scene = new Darkcore.Scene 'game', engine
 	scene.gamestate = {

@@ -4,6 +4,9 @@ class Text extends Darkcore.Sprite
 		@lastText = ""
 		@textColor = [0, 0, 0]
 		@textAlign = 'left'
+		@textSize = 14px
+		@textFamily = "monospace"
+		@textWeight = "normal"
 		@padding = 0px
 		super scene, width, height, x, y
 	setText: (text) ->
@@ -20,6 +23,18 @@ class Text extends Darkcore.Sprite
 		@padding = padding
 	getPadding: ->
 		@padding
+	setTextSize: (textSize) ->
+		@textSize = textSize
+	getTextSize: ->
+		@textSize
+	setTextFamily: (textFamily) ->
+		@textFamily = textFamily
+	getTextFamily: ->
+		@textFamily
+	setTextWeight: (textWeight) ->
+		@textWeight = textWeight
+	getTextWeight: ->
+		@textWeight
 	createElement: ->
 		matrix3d = @getTransformationMatrix!
 
@@ -32,6 +47,9 @@ class Text extends Darkcore.Sprite
 		styles.push "text-align: #{@textAlign}"
 		styles.push "color: rgb(#{@textColor.join \,})"
 		styles.push "padding: #{@padding}px"
+		styles.push "font-size: #{@textSize}px"
+		styles.push "font-family: #{@textFamily}"
+		styles.push "font-weight: #{@textWeight}"
 		return styles
 	/**
 	 * Events
