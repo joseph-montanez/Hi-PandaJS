@@ -47,7 +47,7 @@ module.exports = function(grunt) {
 				'src/Game/Block.ls',
 				'src/Game/Logo.ls',
 				'src/Game/FPS.ls',
-				'App.ls'
+				'src/App.ls'
 			],
 			tasks: ['livescript']
 		}
