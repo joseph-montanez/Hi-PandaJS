@@ -81,13 +81,14 @@
     prototype.onMouseEvent = function(evt, is_down){
       var scene, i$, ref$, len$, sprite;
       if (evt.type === "mousedown") {
-        console.log(evt.target);
         scene = this.getActiveScene();
-        console.log('scene', scene);
         if (scene !== null) {
           for (i$ = 0, len$ = (ref$ = scene.sprites).length; i$ < len$; ++i$) {
             sprite = ref$[i$];
-            console.log(sprite);
+            if (sprite.div[0] === evt.target) {
+              sprite.onLeftClick(evt);
+              break;
+            }
           }
         }
       }
@@ -132,12 +133,24 @@
       return this.scenes.push(scene);
     };
     prototype.getActiveScene = function(){
-      if (this.activeScene) {
-        console.log(this.scenes);
-        return this.scenes[this.activeScene];
-      } else {
-        return null;
+      var active, i$, ref$, len$, i, scene;
+      if (!this.activeScene) {
+        active = false;
+        for (i$ = 0, len$ = (ref$ = this.scenes).length; i$ < len$; ++i$) {
+          i = i$;
+          scene = ref$[i$];
+          if (scene.active) {
+            this.activeScene = i;
+            active = true;
+            break;
+          }
+        }
+        if (!active) {
+          this.activeScene = 0;
+          this.scenes[0].setActive();
+        }
       }
+      return this.scenes[this.activeScene];
     };
     prototype.processEvents = function(){};
     prototype.render = function(){
@@ -549,6 +562,9 @@
       }
       return [];
     };
+    prototype.onLeftClick = function(evt){
+      return console.log('click');
+    };
     prototype.render = function(delta, styles){
       styles == null && (styles = []);
       styles = this.getStyles(styles).join(';');
@@ -706,11 +722,33 @@
       this.loaded = false;
       this.audio = null;
       this.source = null;
+      this.response = null;
+      this.buffer = null;
     }
+    prototype._createSource = function(inBuffer, callback, decode){
+      var x$, parent;
+      callback == null && (callback = false);
+      decode == null && (decode = false);
+      x$ = this.source = this.audio.createBufferSource();
+      x$.connect(this.audio.destination);
+      if (decode) {
+        parent = this;
+        return this.audio.decodeAudioData(inBuffer, function(outBuffer){
+          parent.buffer = outBuffer;
+          parent.source.buffer = parent.buffer;
+          parent.loaded = true;
+          if (callback !== false) {
+            return callback(parent);
+          }
+        });
+      }
+    };
     prototype.load = function(callback){
       var soundfile, parent, x$, request;
       callback == null && (callback = false);
-      if (this.filename.length > 0) {
+      if (this.buffer !== null) {
+        return this._createSource(this.response, callback, true);
+      } else if (this.filename.length > 0) {
         if (Modernizr.audio.ogg) {
           soundfile = this.filename.replace(/\.(mp3|ogg|m4a)/, '.ogg');
         } else if (Modernizr.audio.mp3) {
@@ -722,30 +760,28 @@
         x$.open("GET", soundfile, true);
         x$.responseType = 'arraybuffer';
         x$.onload = function(){
-          var x$;
-          parent.loaded = true;
-          x$ = parent.source = parent.audio.createBufferSource();
-          x$.connect(parent.audio.destination);
-          return parent.audio.decodeAudioData(request.response, function(buffer){
-            parent.source.buffer = buffer;
-            if (callback !== false) {
-              return callback(parent);
-            }
-          });
+          parent.response = request.response;
+          return parent._createSource(request.response, callback, true);
         };
         x$.send();
         return x$;
       }
     };
-    prototype.play = function(){
+    prototype.play = function(replay){
+      replay == null && (replay = false);
       if (this.loaded === false) {
         this.load(function(sound){
           return sound.play();
         });
       }
       if (this.source !== null) {
+        this.source.loop = replay ? true : false;
         return this.source.start(0);
       }
+    };
+    prototype.stop = function(){
+      this.loaded = false;
+      return this.source.stop(0.0);
     };
     return Sound;
   }());

@@ -67,12 +67,12 @@ class Darkcore.Engine
 
 	onMouseEvent: (evt, is_down) ->
 		if evt.type is "mousedown"
-			console.log evt.target
 			scene = @getActiveScene!
-			console.log 'scene', scene
 			if scene != null
 				for sprite in scene.sprites
-					console.log sprite
+					if sprite.div[0] == evt.target
+						sprite.onLeftClick evt
+						break
 
 		if evt.type is "mousemove"
 			@mouse_x = evt.clientX
@@ -110,11 +110,18 @@ class Darkcore.Engine
 		scene.engine = @
 		@scenes.push scene
 	getActiveScene: ->
-		if @activeScene
-			console.log @scenes
-			@scenes[@activeScene]
-		else
-			null
+		if !@activeScene
+			active = false
+			for scene, i in @scenes
+				if scene.active
+					@activeScene = i
+					active = true
+					break
+			if !active
+				@activeScene = 0
+				@scenes[0].setActive!
+		@scenes[@activeScene]
+
 	processEvents: ->
 	render: ->
 		old_time = Darkcore.Engine.getTime!

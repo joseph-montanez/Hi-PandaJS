@@ -174,6 +174,8 @@ class Sprite
 		if @div is null
 			@createElement!
 		[]
+	onLeftClick: (evt) ->
+		console.log \click
 	render: (delta, styles = []) ->
 		styles = (@getStyles styles).join \;
 		if @last_style != styles
