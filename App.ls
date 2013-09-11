@@ -6,9 +6,27 @@ jQuery ->
 
 	menu = new Darkcore.Scene 'menu', engine
 
-	startgame = new Darkcore.Sprite.Text menu, "Start Game", 100, 25, (engine.width / 2), (engine.height / 2)
+	title = new Darkcore.Sprite.Text menu, "Hi Panda", 100, 25, (engine.width / 2), (engine.height / 2) + 50
+		..id = "title"
+		..setTextColor 0, 0, 0
+		..setTextAlign 'center'
+
+	startgame = new Darkcore.Sprite.Text menu, "Start Game", 100, 25, (engine.width / 2), (engine.height / 2) + 15
 		..id = "start"
 		..setColor 255, 0, 0
+		..setTextColor 255, 255, 255
+		..setTextAlign 'center'
+
+	toggleMusic = new Darkcore.Sprite.Text menu, "Stop Music", 100, 25, (engine.width / 2), (engine.height / 2) - 15
+		..id = "toggleMusic"
+		..onLeftClick = (evt) ->
+			if @text == "Stop Music"
+				@setText "Start Music"
+				music.stop!
+			else
+				@setText "Stop Music"
+				music.play!
+		..setColor 100, 255, 100
 		..setTextColor 255, 255, 255
 		..setTextAlign 'center'
 
